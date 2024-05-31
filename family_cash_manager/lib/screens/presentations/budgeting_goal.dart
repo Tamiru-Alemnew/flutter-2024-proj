@@ -2,22 +2,33 @@ import 'package:family_cash_manager/widgets/presentation/common_sidebar.dart';
 import 'package:flutter/material.dart';
 
 
-// displaying the budget and goals. This class extends StatelessWidget and defines the
-
+// The `BudgetAndGoal` class is a stateless widget that represents the 
+// main screen for managing budgets and goals.
 class BudgetAndGoal extends StatelessWidget {
-  const BudgetAndGoal({Key? key});
+  // Constructor for the `BudgetAndGoal` class.
+  // It uses a named parameter `key` and forwards it to the super class.
+  const BudgetAndGoal({Key? key}) : super(key: key);
 
+  // The `build` method describes the part of the user interface 
+  // represented by this widget.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // `drawer` is a widget that displays a side navigation menu.
+      // Here, it uses a custom sidebar widget called `CommonSideBar`.
       drawer: const CommonSideBar(),
+      // `appBar` is a widget that represents the top app bar.
+      // It contains a title widget displaying 'Family Cash Manager'.
       appBar: AppBar(
         title: const Text('Family Cash Manager'),
       ),
+      // `body` is the main content area of the scaffold.
+      // It uses a custom widget called `BudgetPage` to display the content.
       body: BudgetPage(),
     );
   }
 }
+
 
 /// The BudgetPage class represents the page that displays the budget details and allows
 /// users to manage their finances. It extends StatefulWidget, indicating that the UI of
