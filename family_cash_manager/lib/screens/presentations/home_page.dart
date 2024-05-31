@@ -44,38 +44,41 @@ class LandingPage extends StatelessWidget {
             style: TextStyle(fontSize: 18),
           ),
         ),
-        body: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildCard(
-                      context,
-                      "Add Expenses",
-                      AddExpense(),
-                      Icons.attach_money,
-                    ),
-                    _buildCard(
-                      context,
-                      "Edit Category",
-                      EditCatagoryPage(),
-                      Icons.category,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
+
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: 40),
+           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+               _buildCard(
+              context,
+              "Add Expenses",
+              EditExpensePage(),
+              Icons.attach_money,
+            ),
+            
+            _buildCard(
+              context,
+              "Edit Category",
+              EditCategoryPage(),
+              Icons.category,
+            ),
+            ],
+           ),
+           SizedBox(height: 40),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
                     _buildCard(
                       context,
                       "Manage Children",
-                      MangeChildren(),
+                      ManageChildren(),
                       Icons.child_care,
                     ),
                     _buildCard(

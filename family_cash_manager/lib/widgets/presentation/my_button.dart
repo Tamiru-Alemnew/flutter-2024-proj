@@ -1,13 +1,14 @@
-import 'package:family_cash_manager/screens/presentations/home_page.dart';
 import 'package:flutter/material.dart';
 
 class MyButton extends StatelessWidget {
-  const MyButton({super.key});
+  final VoidCallback onPressed;
+
+  const MyButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, '/home'),
+      onTap: onPressed,
       child: Container(
         decoration: BoxDecoration(
           color: const Color.fromARGB(255, 36, 120, 109),

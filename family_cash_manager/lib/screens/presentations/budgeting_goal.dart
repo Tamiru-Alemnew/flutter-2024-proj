@@ -50,7 +50,6 @@ class _BudgetPageState extends State<BudgetPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        scrolledUnderElevation: 0.0,
         title: Text(
           'Budgeting & Goal Setting',
           style: TextStyle(fontSize: 18),
@@ -75,7 +74,9 @@ class _BudgetPageState extends State<BudgetPage> {
                 Spacer(),
                 IconButton(
                   icon: Icon(Icons.edit),
-                  onPressed: () {},
+                  onPressed: () {
+                    _editOverallBudget();
+                  },
                 ),
               ],
             ),
@@ -105,7 +106,9 @@ class _BudgetPageState extends State<BudgetPage> {
                 Spacer(),
                 IconButton(
                   icon: Icon(Icons.edit),
-                  onPressed: () {},
+                  onPressed: () {
+                    _editChildSpendingLimit();
+                  },
                 ),
               ],
             ),
@@ -137,8 +140,10 @@ class _BudgetPageState extends State<BudgetPage> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {},
-              child: Text('Save'),
+              onPressed: () {
+                _addNewGoal();
+              },
+              child: Text('Add New Goal'),
             ),
           ],
         ),
@@ -177,7 +182,9 @@ class _BudgetPageState extends State<BudgetPage> {
             Spacer(),
             IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () {},
+              onPressed: () {
+                _editGoal(title, currentValue);
+              },
             ),
           ],
         ),
@@ -193,6 +200,138 @@ class _BudgetPageState extends State<BudgetPage> {
           },
         ),
       ],
+    );
+  }
+
+  void _editOverallBudget() {
+    _showEditDialog(
+      title: 'Edit Overall Budget',
+      initialValue: overallBudget,
+      onSave: (value) {
+        setState(() {
+          overallBudget = value;
+        });
+      },
+    );
+  }
+
+  void _editChildSpendingLimit() {
+    _showEditDialog(
+      title: 'Edit Child Spending Limit',
+      initialValue: childSpendingLimit,
+      onSave: (value) {
+        setState(() {
+          childSpendingLimit = value;
+        });
+      },
+    );
+  }
+
+  void _editGoal(String title, double? currentValue) {
+    _showEditDialog(
+      title: 'Edit $title Goal',
+      initialValue: currentValue ?? 0.0,
+      onSave: (value) {
+        setState(() {
+          specificGoals[title] = value;
+        });
+      },
+    );
+  }
+
+  void _addNewGoal() {
+    _showAddDialog(
+      onSave: (title, value) {
+        setState(() {
+          specificGoals[title] = value;
+        });
+      },
+    );
+  }
+
+  void _showEditDialog({
+    required String title,
+    required double initialValue,
+    required Function(double) onSave,
+  }) {
+    TextEditingController controller =
+        TextEditingController(text: initialValue.toString());
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(labelText: 'Value'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                double newValue = double.parse(controller.text);
+                onSave(newValue);
+                Navigator.of(context).pop();
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAddDialog({
+    required Function(String, double) onSave,
+  }) {
+    TextEditingController titleController = TextEditingController();
+    TextEditingController valueController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add New Goal'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(labelText: 'Title'),
+              ),
+              TextField(
+                controller: valueController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Value'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String newTitle = titleController.text;
+                double newValue = double.parse(valueController.text);
+                onSave(newTitle, newValue);
+                Navigator.of(context).pop();
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

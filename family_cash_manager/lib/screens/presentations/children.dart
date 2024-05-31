@@ -1,27 +1,54 @@
+import 'package:family_cash_manager/blocs/family_members_bloc.dart';
+import 'package:family_cash_manager/blocs/user_bloc.dart';
 import 'package:family_cash_manager/widgets/presentation/common_sidebar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class Child {
-  String name;
-  String role;
+class ManageChildren extends StatelessWidget {
+  const ManageChildren({Key? key}) : super(key: key);
 
-  Child(this.name, this.role);
-}
 
-/// This class represents the screen for managing children in the Family Cash Manager app.
-/// It extends StatelessWidget to provide a static user interface that doesn't change based on data.
-
-class MangeChildren extends StatelessWidget {
-  const MangeChildren({Key? key});
+  Future<String> getUserRole(BuildContext context) async {
+    final userBloc = BlocProvider.of<UserBloc>(context);
+    final userState = userBloc.state;
+    if (userState is UserAuthenticated) {
+      return userState.user.role;
+    } else {
+      return '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const CommonSideBar(),
-      appBar: AppBar(
-        title: const Text('Family Cash Manager'),
-      ),
-      body: ChildrenPage(),
+    return FutureBuilder<String>(
+      future: getUserRole(context),
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (snapshot.data != 'parent') {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('You must be a parent to edit categories')),
+            );
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pop(context);
+          });
+          return Container();
+        } else {
+          return Scaffold(
+            drawer: const CommonSideBar(),
+            appBar: AppBar(
+              title: const Text('Family Cash Manager'),
+            ),
+            body: ChildrenPage(),
+          );
+        }
+      },
+
     );
   }
 }
@@ -36,20 +63,15 @@ class ChildrenPage extends StatefulWidget {
 /// This class represents the state of the ChildrenPage widget in the Family Cash Manager app.
 /// It manages the list of children and their information.
 class _ChildrenPageState extends State<ChildrenPage> {
-  List<Child> childrenList = [
-    // List of Child objects with their names and roles
-    Child('jon doe', 'Child'),
-    Child('jane doe', 'Child'),
-    Child('Abebe kebede', 'Child'),
-    Child('Mulugeta kebede', 'Child'),
-    Child('jordan haile', 'Child'),
-    Child('selam haile', 'Child'),
-    Child('betty haile', 'Child'),
-    Child('michael haile', 'Child'),
-    Child('daniel haile', 'Child'),
-    Child('sara haile', 'Child'),
-    Child('ursula haile', 'Child'),
-  ];
+
+  List<User>? childrenList;
+
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<FamilyMembersBloc>(context).add(GetAllFamilyMembers());
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -61,67 +83,80 @@ class _ChildrenPageState extends State<ChildrenPage> {
           style: TextStyle(fontSize: 18),
         ),
       ),
-      body: ListView.builder(
-        itemCount: childrenList.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(childrenList[index].name),
-            subtitle: Text('Role: ${childrenList[index].role}'),
-            trailing: IconButton(
-              icon: Icon(Icons.swap_horiz),
-              onPressed: () {
-                _showConfirmationDialog(index);
+      body: BlocBuilder<FamilyMembersBloc, FamilyMembersState>(
+        builder: (context, state) {
+          if (state is FamilyMembersLoaded) {
+            childrenList = state.familyMembers
+                .map((user) => User(
+                    email: user.email, role: user.role, userId: user.userId))
+                .toList();
+            return BlocBuilder<UserBloc, UserState>(
+              builder: (context, state) {
+                return ListView.builder(
+                  itemCount: childrenList!.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      key: ValueKey(childrenList![index].userId),
+                      title: Text(childrenList![index].email),
+                      subtitle: Text(childrenList![index].role),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text("Change Role"),
+                                content: Text(
+                                    "Do you want to change ${childrenList?[index].email}'s role?"),
+                                actions: [
+                                  ElevatedButton(
+                                    child: Text("Cancel"),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  ElevatedButton(
+                                    child: Text("Change"),
+                                    onPressed: () {
+                                      final userState =
+                                          context.read<UserBloc>().state;
+
+                                      if (userState is UserAuthenticated) {
+                                        BlocProvider.of<FamilyMembersBloc>(
+                                                context)
+                                            .add(UpdateRole(
+                                          id: childrenList![index].userId,
+                                          role: childrenList![index].role ==
+                                                  "parent"
+                                              ? "children"
+                                              : "parent",
+                                        ));
+
+                                        Navigator.of(context).pop();
+                                        _showSnackbar();
+                                      }
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  },
+                );
               },
-            ),
-          );
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
         },
       ),
     );
-  }
-
-  /// Shows a confirmation dialog when the user wants to change a child's role.
-  /// The dialog prompts the user to confirm the role change for the specified child.
-  /// If the user confirms, the role is changed, and a snackbar is shown to indicate the success.
-  void _showConfirmationDialog(int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Change Role"),
-          content: Text(
-              "Do you want to change ${childrenList[index].name}'s role?"), // Confirmation message with the child's name
-          actions: [
-            ElevatedButton(
-              child: Text("Cancel"), // Cancel button
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              child: Text("Change"),
-              onPressed: () {
-                _changeRole(
-                    index); // Call _changeRole method to update the child's role
-                Navigator.of(context).pop();
-                _showSnackbar(); // Show a snackbar to indicate the success of the role change
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _changeRole(int index) {
-    if (childrenList[index].role == 'Parent ') {
-      setState(() {
-        childrenList[index].role = 'Child';
-      });
-      return;
-    }
-    setState(() {
-      childrenList[index].role = 'Parent ';
-    });
   }
 
   void _showSnackbar() {

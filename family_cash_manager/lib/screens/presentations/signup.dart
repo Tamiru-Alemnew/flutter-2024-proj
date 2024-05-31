@@ -65,6 +65,7 @@ class SignUp extends StatelessWidget {
                     ),
                   ),
                   Expanded(child: SignUpTextFeilds()),
+
                 ],
               ),
             ),
@@ -72,3 +73,4 @@ class SignUp extends StatelessWidget {
         ));
   }
 }
+

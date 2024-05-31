@@ -1,23 +1,68 @@
+import 'package:family_cash_manager/blocs/category_bloc.dart';
+import 'package:family_cash_manager/blocs/user_bloc.dart';
 import 'package:family_cash_manager/widgets/presentation/common_sidebar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// The EditCatagoryPage class represents the page for editing a category in the Family Cash Manager app.
-/// This class extends StatelessWidget and defines the UI layout using Scaffold. It includes a drawer for
-/// navigation and an app bar with the app title. The body of the page is populated with the EditExpense widget,
-/// which contains the form and controls for editing the category details.
-class EditCatagoryPage extends StatelessWidget {
-  const EditCatagoryPage({Key? key});
+class EditCategoryPage extends StatelessWidget {
+  const EditCategoryPage({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
+Future<String> getUserRole(BuildContext context) async {
+  final userBloc = BlocProvider.of<UserBloc>(context);
+  final userState = userBloc.state;
+  if (userState is UserAuthenticated) {
+    return userState.user.role;
+  }else{
+    return '';
+  }
+}
+
+
+@override
+Widget build(BuildContext context) {
+  return FutureBuilder<String>(
+    future: getUserRole(context),
+    builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return CircularProgressIndicator();
+      } else if (snapshot.hasError) {
+        return Text('Error: ${snapshot.error}');
+      } else if (snapshot.data != 'parent') {
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text('You must be a parent to edit categories')),
+              );
+            });
+            
+        Navigator.pop(context);
+        return Container();
+
+      } else {
     return Scaffold(
       drawer: const CommonSideBar(),
       appBar: AppBar(
         title: const Text('Family Cash Manager'),
       ),
-      body: const EditExpense(),
+      body: BlocListener<CategoryBloc, CategoryState>(
+        listener: (context, state) {
+          if (state is CategoryLoaded) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Categories loaded')),
+            );
+          } else if (state is CategoryError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        child: const EditExpense(),
+      ),
     );
   }
+}
+);
+}
 }
 
 /// The EditExpense class represents the form for editing an expense category in the Family Cash Manager app.
@@ -25,7 +70,7 @@ class EditCatagoryPage extends StatelessWidget {
 /// and state updates. The class overrides the createState() method to create an instance of _EditExpenseState,
 /// which manages the state of the EditExpense form.
 class EditExpense extends StatefulWidget {
-  const EditExpense({Key? key});
+  const EditExpense({Key? key}) : super(key: key);
 
   @override
   _EditExpenseState createState() => _EditExpenseState();
@@ -37,105 +82,131 @@ class EditExpense extends StatefulWidget {
 /// It includes a list of categories, a text field for adding new categories, and buttons for adding categories and
 /// completing the editing process. The state is updated using the setState() method, reflecting changes made by the user.
 class _EditExpenseState extends State<EditExpense> {
-  List<String> categories = ['Food', 'Transport'];
   TextEditingController _categoryController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<CategoryBloc>(context, listen: false).add(GetCategories());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          scrolledUnderElevation: 0.0,
-          title: Text(
-            'Edit Category',
-            style: TextStyle(fontSize: 18),
+
+      appBar: AppBar(
+        title: Text(
+          'Edit Category',
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Add categories to help your family members track their expenses",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              BlocBuilder<CategoryBloc, CategoryState>(
+                builder: (context, state) {
+                  if (state is CategoryLoading) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (state is CategoryLoaded) {
+                    return Column(
+                      children: state.categories.map((category) {
+                        return CategoryItem(
+                          category: category,
+                          onEdit: (newName) {
+                            BlocProvider.of<CategoryBloc>(context,
+                                    listen: false)
+                                .add(
+                              UpdateCategories(
+                                id: category['id'] ?? '',
+                                newName: newName,
+                              ),
+                            );
+                          },
+                          onDelete: () {
+                            BlocProvider.of<CategoryBloc>(context,
+                                    listen: false)
+                                .add(
+                              DeleteCategories(id: category['id'] ?? ''),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    );
+                  } else if (state is CategoryError) {
+                    return Center(child: Text(state.message));
+                  } else {
+                    return Center(child: Text("No categories available"));
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _categoryController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Add new category",
+                ),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    style: ButtonStyle(
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10))),
+                        backgroundColor: MaterialStateProperty.all(
+                            const Color.fromARGB(255, 36, 120, 109))),
+                    onPressed: () {
+                      String newCategory = _categoryController.text.trim();
+                      if (newCategory.isNotEmpty) {
+                        BlocProvider.of<CategoryBloc>(context, listen: false)
+                            .add(
+                          AddCategories(name: newCategory),
+                        );
+                        _categoryController.clear();
+                      }
+                    },
+                    child: Text(
+                      "Add Category",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10))),
+                        backgroundColor: MaterialStateProperty.all(
+                            const Color.fromARGB(255, 36, 120, 109))),
+                    onPressed: () {
+                      print("Done");
+                    },
+                    child: Text("Done", style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Add categories to help your family members track their expenses",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Column(
-                  children: categories.map((category) {
-                    return CategoryItem(
-                      category: category,
-                      onEdit: () {
-                        // Handle edit category
-                        print('Editing $category');
-                      },
-                      onDelete: () {
-                        setState(() {
-                          categories.remove(category);
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _categoryController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Add new category",
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ButtonStyle(
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10))),
-                          backgroundColor: MaterialStateProperty.all(
-                              const Color.fromARGB(255, 36, 120, 109))),
-                      onPressed: () {
-                        setState(() {
-                          String newCategory = _categoryController.text.trim();
-                          if (newCategory.isNotEmpty &&
-                              !categories.contains(newCategory)) {
-                            categories.add(newCategory);
-                            _categoryController.clear();
-                          }
-                        });
-                      },
-                      child: Text(
-                        "Add Category",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      style: ButtonStyle(
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10))),
-                          backgroundColor: MaterialStateProperty.all(
-                              const Color.fromARGB(255, 36, 120, 109))),
-                      onPressed: () {
-                        print("Done");
-                      },
-                      child:
-                          Text("Done", style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ));
+      ),
+    );
+
   }
 
   @override
@@ -145,17 +216,11 @@ class _EditExpenseState extends State<EditExpense> {
   }
 }
 
-/// The CategoryItem class represents an item widget for displaying and interacting with an expense category.
-/// It extends StatefulWidget, indicating that the UI of this item can change dynamically based on user interactions
-/// and state updates. The class overrides the createState() method to create an instance of _CategoryItemState,
-/// which manages the state of the CategoryItem.
-///
-/// The CategoryItem widget takes in the category name, and optional callbacks for editing and deleting the category.
-/// It provides a visual representation of the category and allows the user to perform actions on it.
+
 
 class CategoryItem extends StatefulWidget {
-  final String category;
-  final VoidCallback? onEdit;
+  final Map category;
+  final Function(String)? onEdit;
   final VoidCallback? onDelete;
 
   const CategoryItem({
@@ -182,7 +247,7 @@ class _CategoryItemState extends State<CategoryItem> {
   @override
   void initState() {
     super.initState();
-    _editingController = TextEditingController(text: widget.category);
+    _editingController = TextEditingController(text: widget.category[widget.category['id']]);
   }
 
   @override
@@ -204,18 +269,14 @@ class _CategoryItemState extends State<CategoryItem> {
                       controller: _editingController,
                       autofocus: true,
                       onEditingComplete: () {
-                        setState(() {
-                          _isEditing = false;
-                        });
+                        _submitEdit();
                       },
                       onSubmitted: (_) {
-                        setState(() {
-                          _isEditing = false;
-                        });
+                        _submitEdit();
                       },
                     )
                   : Text(
-                      widget.category,
+                      widget.category[widget.category['id']],
                       style: const TextStyle(fontSize: 16),
                     ),
             ),
@@ -226,9 +287,6 @@ class _CategoryItemState extends State<CategoryItem> {
                     setState(() {
                       _isEditing = true;
                     });
-                    if (widget.onEdit != null) {
-                      widget.onEdit!();
-                    }
                   },
                   icon: Icon(Icons.edit),
                   color: Theme.of(context).primaryColor,
@@ -248,6 +306,16 @@ class _CategoryItemState extends State<CategoryItem> {
         ),
       ),
     );
+  }
+
+  void _submitEdit() {
+    setState(() {
+      _isEditing = false;
+    });
+    if (widget.onEdit != null) {
+      widget.onEdit!(_editingController.text.trim());
+    }
+    BlocProvider.of<CategoryBloc>(context, listen: false).add(UpdateCategories(id: widget.category["id"], newName: _editingController.text.trim()));
   }
 
   @override
