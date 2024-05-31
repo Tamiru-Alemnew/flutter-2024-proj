@@ -5,11 +5,18 @@ const List<String> categories = ['School', 'Transport', 'Food', 'Other'];
 class DropdownMenus extends StatefulWidget {
   static String dropdownValue = categories.first;
 
+  
+
   const DropdownMenus({Key? key});
 
+
+  
   @override
   State<DropdownMenus> createState() => _DropdownMenusState();
 }
+
+
+
 
 class _DropdownMenusState extends State<DropdownMenus> {
   @override
@@ -19,6 +26,8 @@ class _DropdownMenusState extends State<DropdownMenus> {
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(color: Colors.grey),
       ),
+
+      
       padding: EdgeInsets.symmetric(horizontal: 12.0),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(

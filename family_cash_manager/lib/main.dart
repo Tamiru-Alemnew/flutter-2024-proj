@@ -12,12 +12,16 @@ import 'package:family_cash_manager/screens/presentations/home_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:family_cash_manager/blocs/family_members_bloc.dart';
 
+
+
 void main() {
   runApp(const MyApp());
 }
 
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key});
+  
 
   @override
   Widget build(BuildContext context) {
