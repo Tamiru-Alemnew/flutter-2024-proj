@@ -1,7 +1,7 @@
 import 'package:family_cash_manager/widgets/presentation/common_sidebar.dart';
 import 'package:flutter/material.dart';
 
-// The BudgetAndGoal class represents the main screen of the Family Cash Manager app,
+
 // displaying the budget and goals. This class extends StatelessWidget and defines the
 
 class BudgetAndGoal extends StatelessWidget {
