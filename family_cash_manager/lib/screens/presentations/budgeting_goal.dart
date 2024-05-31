@@ -94,7 +94,7 @@ class _BudgetPageState extends State<BudgetPage> {
               value: overallBudget,
               min: 1000.0,
               max: 10000.0,
-              activeColor: const Color.fromARGB(255, 32, 31, 31),
+              activeColor: const Color.fromARGB(255, 32, 31, 32),
               onChanged: (value) {
                 setState(() {
                   overallBudget = value;
