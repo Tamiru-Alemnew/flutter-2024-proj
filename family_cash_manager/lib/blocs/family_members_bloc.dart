@@ -23,12 +23,14 @@ class FamilyMembersState extends Equatable {
 class UpdateRole extends FamilyMember {
   final int id;
   final String role;
+  
 
   UpdateRole({required this.id, required this.role});
 
   @override
   List<Object> get props => [id, role];
 }
+
 
 class FamilyMembersInitial extends FamilyMembersState {}
 
