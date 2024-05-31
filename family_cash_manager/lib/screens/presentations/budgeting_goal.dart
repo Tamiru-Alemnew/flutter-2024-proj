@@ -40,7 +40,7 @@ class BudgetPage extends StatefulWidget {
   _BudgetPageState createState() => _BudgetPageState();
 }
 
-/// The _BudgetPageState class represents the state of the BudgetPage widget. It manages
+
 /// the dynamic data and user interactions for budgeting and goal setting. This class
 /// extends the State class and overrides the build() method to define the UI layout
 /// and functionality of the BudgetPage. It includes sliders, input fields, and buttons
