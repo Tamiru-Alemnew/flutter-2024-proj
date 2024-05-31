@@ -98,6 +98,7 @@ class FamilyMembersBloc extends Bloc<FamilyMember, FamilyMembersState> {
           }),
         );
         add(GetAllFamilyMembers());
+        
 
       } catch (e) {
         emit(FamilyMembersError(error: e.toString()));
