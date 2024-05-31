@@ -7,9 +7,12 @@ import 'package:family_cash_manager/screens/presentations/edit_category.dart';
 import 'package:family_cash_manager/screens/presentations/expenses.dart';
 import 'package:family_cash_manager/screens/presentations/home_page.dart';
 
+
+
 void main() {
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key});
