@@ -4,10 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
+
 class FamilyMember extends Equatable {
   @override
   List<Object> get props => [];
 }
+
 
 class GetAllFamilyMembers extends FamilyMember {}
 
@@ -15,6 +18,7 @@ class FamilyMembersState extends Equatable {
   @override
   List<Object> get props => [];
 }
+
 
 class UpdateRole extends FamilyMember {
   final int id;
