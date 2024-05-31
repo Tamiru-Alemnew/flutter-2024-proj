@@ -44,7 +44,6 @@ class BudgetPage extends StatefulWidget {
 /// the dynamic data and user interactions for budgeting and goal setting. This class
 /// extends the State class and overrides the build() method to define the UI layout
 /// and functionality of the BudgetPage. It includes sliders, input fields, and buttons
-/// for managing the overall family budget, child spending limit, and specific goals.
 /// The state is updated using the setState() method, reflecting changes made by the user.
 
 class _BudgetPageState extends State<BudgetPage> {
