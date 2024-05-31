@@ -1,9 +1,11 @@
+import 'package:family_cash_manager/blocs/user_bloc.dart';
 import 'package:family_cash_manager/screens/presentations/budgeting_goal.dart';
 import 'package:family_cash_manager/screens/presentations/children.dart';
 import 'package:family_cash_manager/screens/presentations/edit_category.dart';
 import 'package:family_cash_manager/screens/presentations/expenses.dart';
 import 'package:family_cash_manager/screens/presentations/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CommonSideBar extends StatelessWidget {
   const CommonSideBar({Key? key}) : super(key: key);
@@ -38,7 +40,7 @@ class CommonSideBar extends StatelessWidget {
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(context,'/home');
+              Navigator.pushNamed(context, '/home');
             },
           ),
           ListTile(
@@ -52,7 +54,7 @@ class CommonSideBar extends StatelessWidget {
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(context,'/addExpense');
+              Navigator.pushNamed(context, '/addExpense');
             },
           ),
           ListTile(
@@ -66,7 +68,7 @@ class CommonSideBar extends StatelessWidget {
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(context,'/editCategories');
+              Navigator.pushNamed(context, '/editCategories');
             },
           ),
           ListTile(
@@ -80,7 +82,7 @@ class CommonSideBar extends StatelessWidget {
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(context,'/manageChildren');
+              Navigator.pushNamed(context, '/manageChildren');
             },
           ),
           ListTile(
@@ -94,7 +96,7 @@ class CommonSideBar extends StatelessWidget {
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(context,'/budgetingGoal');
+              Navigator.pushNamed(context, '/budgetingGoal');
             },
           ),
           ListTile(
@@ -108,9 +110,11 @@ class CommonSideBar extends StatelessWidget {
               ],
             ),
             onTap: () {
-              Navigator.pushNamed(context,'/');
+              BlocProvider.of<UserBloc>(context).add(Logout());
+              Navigator.pushNamed(context, '/');
             },
           ),
+
         ],
       ),
     );

@@ -35,6 +35,8 @@ class UserSignUp extends UserEvent {
   List<Object> get props => [name, email, password, role];
 }
 
+class Logout extends UserEvent {}
+
 abstract class UserState extends Equatable {
   @override
   List<Object> get props => [];
@@ -73,7 +75,6 @@ class UserError extends UserState {
   @override
   List<Object> get props => [error];
 }
-
 
 // user_bloc
 class UserBloc extends Bloc<UserEvent, UserState> {
@@ -144,6 +145,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       }
     });
 
-
+    on<Logout>((event, emit) {
+      emit(UserInitial());
+    });
   }
 }

@@ -44,8 +44,7 @@ class LandingPage extends StatelessWidget {
             style: TextStyle(fontSize: 18),
           ),
         ),
-
-      ),
+      
       body: SingleChildScrollView(
         child: Center(
         child: Column(
